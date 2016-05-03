@@ -91,18 +91,17 @@
 %\shortauthortitle{Firstauthor \MakeLowercase{\textit{et al.}}: Paper Title}
 
 %% Abstract section.
-\abstract{Duis autem vel eum iriure dolor in hendrerit in vulputate
-velit esse molestie consequat, vel illum dolore eu feugiat nulla
-facilisis at vero eros et accumsan et iusto odio dignissim qui blandit
-praesent luptatum zzril delenit augue duis dolore te feugait nulla
-facilisi. Lorem ipsum dolor sit amet, consectetuer adipiscing elit,
-sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna
-aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper
-suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem
-vel eum iriure dolor in hendrerit in vulputate velit esse molestie
-consequat, vel illum dolore eu feugiat nulla facilisis at vero eros et
-accumsan et iusto odio dignissim qui blandit praesent luptatum zzril
-delenit augue duis dolore te feugait nulla facilisi.
+\abstract{Direct volume rendering (DVR) is a visualization technique for the display of
+	3D scalar fields. It excels at rendering interior views of 3D scanned
+	objects, simulation data, or any subject lacking a well defined structure, such
+	as gaseous phenomena. However, a significant problem with DVR is that the
+	memory requirements of volume data sets quickly exceed the size of available
+	memory on the graphics processor.  When data exceeds available gpu memory, 
+	interactive visualization becomes impossible without using complex out-of-core 
+	rendering methods. The problem addressed by this project is that these real-world data sets are
+	too large to fit in the largest GPU memory capacities available today
+	(12--16GB).  Rendering these volumes requires complicated out-of-core methods that can
+	negatively impact visual quality and interactivity.  
 } % end of abstract
 
 %% Keywords that describe your work. Will show as 'Index Terms' in journal
@@ -120,11 +119,11 @@ delenit augue duis dolore te feugait nulla facilisi.
 }
 
 %% Uncomment below to include a teaser figure.
-  \teaser{
- \centering
- \includegraphics[width=16cm]{CypressView}
-  \caption{In the Clouds: Vancouver from Cypress Mountain.}
-  }
+%  \teaser{
+% \centering
+% \includegraphics[width=16cm]{CypressView}
+%  \caption{In the Clouds: Vancouver from Cypress Mountain.}
+%  }
 
 %% Uncomment below to disable the manuscript note
 %\renewcommand{\manuscriptnotetxt}{}
@@ -176,26 +175,63 @@ too large to fit in the largest GPU memory capacities available today
 (12--16GB).  Rendering these volumes requires complicated out-of-core methods that can
 negatively impact visual quality and interactivity.  
 
-\begin{table}[h]\label{table:targetedDataSets}
-	 	 \caption{Selected data sets and dimensions ($1\textnormal{K}=\nobreak1024$) 
-	 	 	with corresponding sizes in bytes.}
+\begin{table}[h]
+ 	 \caption{Selected data sets and dimensions ($1\textnormal{K}=\nobreak1024$) 
+	 	 	with corresponding sizes in bytes.}\label{table:targetedDataSets}
 	 \scriptsize
-
 	\begin{center}
-		\begin{tabular}{lcc}
-			\textbf{Data set} & \textbf{Dimensions} (voxels) & \textbf{Size} (bytes)\\
+		\begin{tabular}{lccc}
+			\textbf{Data set} & \textbf{Dimensions} & \textbf{Voxels} & \textbf{Size} (bytes)\\
 			\hline
-			Hop flower & $512^3$ & $536$MB \\
-			Graphite foam & $1\textnormal{K}^3$ & $4.3$GB  \\
-			Bone fragment & $2\textnormal{K}^3$ & $34.4$GB  \\
-			Synthetically generated volume & $4\textnormal{K}^3$ & $274.8$GB \\
-			Synthetically generated volume & $8\textnormal{K}^3$ & $2.2$TB  \\
+			Hop flower & $512^3$ & 134M & $536$MB \\
+			Graphite foam & $1\textnormal{K}^3$ & $1,073$M & $4.3$GB  \\
+			Bone fragment & $2\textnormal{K}^3$ & $8,589$M & $34.4$GB  \\
+			4K Hop flower & $4\textnormal{K}^3$ & $68,719$M & $274.8$GB \\
+			Synthetic volume & $8\textnormal{K}^3$ & $549,755$M & $2.2$TB  \\
 		\end{tabular}
 	\end{center}
-	
 \end{table}
 
 \section{Related Work}
+The problem of large volume data exhayusting available gpu memory has been studied
+for ever. Several approaches are possible such as compression methods that are easily
+decompressed on the fly on the gpu \cite{Muraki1993}, \cite{Ihm1999}, and 
+simple removal of unneeded data that would otherwise be rendered completely transparent, 
+or occluded from view by data rendered completely opaque.
+
+\cite{Li2003} adapt empty space skipping and early ray termination used in ray-casting volume renderers
+to work in slice-based rendering. Their methods employ
+
+\cite{Engel2004} discuss subdivision of volumetric data sets into bricks that
+fit entirely in the local memory on the graphics board.  A cache of these
+bricks resides in CPU memory and the bricks are swapped into GPU memory for
+rendering. The bricks must be individually rendered with standard volume
+rendering techniques; the number of rendering passes is equal to the number of
+bricks.  The images produced by each brick is blended into the frame buffer as
+a final step which means rendering order is important and dependent on 
+the blending algorithm used for compositing the final image.  
+
+\cite{Lee2004} showed that subdividing the volume into smaller subvolumes based
+on the size of the texture cache hardware improves volume rendering performance
+by up to 90\% compared to no subdivisions. The authors use a GPU texture cache
+simulator and volumes of size $256^3$ and $512^3$, with subvolume sizes
+of $16^3$ and $32^3$. The authors note the positive side effect of improved 
+cache performance is decreased memory bandwidth. 
+
+A box shrinking approach by \cite{Vidal2008} recursively splits bounding
+boxes containing as few empty voxels as possible. The smallest bounding box
+around non-empty space within the volume is found by shrinking bounding
+boxes until they contain the least amount of empty space as possible. 
+Perforamance is improved through the use of summed volume tables to accelerate 
+the calculation of the number of 
+non-empty voxels within a bounding box. Using this approach, the authors
+report 48 to 76 percent of data is removed from the test data sets without
+changing the appearance of the visualization. No user interaction is required.
+
+We use the simplest data removal approach and recognize that the presented
+methods are not novel or sophisticated, but maintain that they work well
+across a wide range of volume types with large homogenous regions of neighboring
+voxels.
 
 \section{Methods}
 
@@ -210,21 +246,57 @@ is done by visiting each voxel in a subvolume and using a user defined
 classifier to decide if the voxel is relevant or irrelevant. Subvolumes with a
 user defined percentage of irrelevant voxels can be removed.
 
-Rectangular subvolumes are used because 3D textures on the GPU cannot
-be jagged---they must be rectangular 3D arrays of image data.
+We attempt to use a very simple approach to tackle both space skipping and 
+data removal. Our preprocessor program subdivides volume data into uniformly
+sized subvolumes and scans the subvolumes to determine if the subvolume
+would be relevant to the final visualization. Only subvolumes that contain
+data that provides a relevant contribution to the desired visualization are
+sent to the GPU.
 
-This project uses a classification scheme to identify the empty data. A user defined
-classifier function that maps voxel values to voxel relevance is employed to identify
-which space should be removed. 
+This project uses a classification scheme to identify the empty data. A user
+defined classifier function that maps voxel values to voxel relevance is
+employed to identify which space should be removed. 
 
-It is prohibitively expensive to analyze each voxel for relevance. Prior to using the classifier,
-the empty space removal procedure from~\cite{Vidal2008-dx} is used. 
-They recursively shrink the bounding volume around regions of non-empty space
-starting from the outside of the volume. The algorithm gains its efficiency by
-using a summed volume table to compute the volume of candidate bounding
-volumes. This allows culling large amounts of unneeded data very quickly from around 
-the outsides of the useful data. However, the Vidal method is an outside-in approach. To
-achieve fine grained data removal we utilize a second pass with our classification method.
+\paragraph{Implementation}
+Two artifacts have been developed: a preprocessing program and a simple direct
+volume renderer.  Both have been developed in modern C++, and the volume
+renderer uses OpenGL 4 to display visualizations. The volume renderer is
+a slice-based multi-volume renderer that we use to 
+render the many subvolumes defined by the preprocessor program.
+
+\paragraph{Processing Pipeline} 
+The preprocessor streams the original, large volume data set from storage and
+collects statistics about the data. In a second pass, the volume is streamed
+again one block at a time and block-local analysis is done. Each subvolume is
+classified as relevant or irrelevant and the binary index file containing
+classification information of each subvolume is generated.  The index file is
+used by the simple direct volume renderer to render the subvolumes. is
+a slicing 3D texture-based multi-volume renderer. 
+
+The preprocessor program uses a 2-pass streaming approach when reading the
+large volume data. The streaming approach is necessary to enable processing on
+reasonably powerful desktop systems which cannot hold the entire data set in
+memory. The first pass streams rows of data into memory and collects global
+statistics about the volume. The second pass streams each block of data into
+memory for block local analysis and generates the index file.
+
+\begin{figure}[htb]\label{fig:initToViewFlowWithPartition}
+	\begin{centering}
+		\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{init-to-view-with-index-file}
+		\caption{Volume visualization pipeline using the index file produced during preprocessing.}
+	\end{centering}
+\end{figure}
+
+
+
+%It is prohibitively expensive to analyze each voxel for relevance. Prior to using the classifier,
+%the empty space removal procedure from~\cite{Vidal2008-dx} is used. 
+%They recursively shrink the bounding volume around regions of non-empty space
+%starting from the outside of the volume. The algorithm gains its efficiency by
+%using a summed volume table to compute the volume of candidate bounding
+%volumes. This allows culling large amounts of unneeded data very quickly from around 
+%the outsides of the useful data. However, the Vidal method is an outside-in approach. To
+%achieve fine grained data removal we utilize a second pass with our classification method.
 
 \subsection{Basic subvolume blocking}\label{sec:basicSubvolumeBlocking}
 
@@ -235,17 +307,25 @@ Algorithm~\ref{alg:initGpuTexture}
 shows the method for generating a small 3D texture, $T_{i,j,k}$ for a subvolume
 $S_{i,j,k}$.
 
+\paragraph{Proxy Geometry}
+In a traditional slice-based renderer, a set of 2D slices are used to resample the volume
+texture at regularly space intervals. The number of slices depends on the sampling
+rate used when collecting the volume data \cite{Engel2004}. 
+
+The subvolume blocking approach requires a separate set of slice geometry for each 
+subvolume be used. The number of slices per subvolume depends on the number of 
+data samples within each subvolume and the number of subvolumes generated.
+
 The basic approach does not reduce the size of the data on the GPU, but does
 improve cache performance if the subvolumes are sized according to texture
 cache size. In order to reduce the amount of data sent to the GPU we must have 
 a way to determine which subvolumes are relevant to the visualization through
 a classification process.
 
-
 \begin{figure}[htb]\label{fig:volumeToSubvolumes}
 	\begin{centering}
-		\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{volume_to_subvolumes}
-		\caption{Subvolume blocking splits the original data set into small subvolumes.}
+		\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{volume_to_subvolumes_and_quads}
+		\caption{Initialization to view with partitioning.}
 	\end{centering}
 \end{figure}
 
@@ -272,11 +352,13 @@ a classification process.
 
 \subsection{Subvolume blocking with classification}\label{sec:subvolumeBlockingWithClassification}
 
-To facilitate easy data removal, the basic subvolume blocking approach can be extended to 
-include a classification step that identifies subvolumes relevant to the desired visualization. 
-\textit{Relevant} subvolumes are expected to contribute in some way to the visualization, otherwise 
-a subvolume is \textit{irrelevant}. Algorithm~\ref{alg:partitionAndThreshold} shows how the classification 
-step is merged  with the basic subdivision algorithm (Algorithm~\ref{alg:initGpuTexture}).
+To facilitate easy data removal, the basic subvolume blocking approach can be
+extended to include a classification step that identifies subvolumes relevant
+to the desired visualization.  \textit{Relevant} subvolumes are expected to
+contribute in some way to the visualization, otherwise a subvolume is
+\textit{irrelevant}. Algorithm~\ref{alg:partitionAndThreshold} shows how the
+classification step is merged  with the basic subdivision algorithm
+(Algorithm~\ref{alg:initGpuTexture}).
 
 Determining if a subvolume is relevant requires examining each voxel in the
 volume to determine the voxel relevance. The user must supply the classifier
@@ -335,13 +417,59 @@ and the relevant voxel threshold ($s_{min}$).
 %\paragraph{Rejected Ejector Seat Reservation}
 \section{Results}
 
+\begin{table}[h]
+	\caption{Data reduction results.}\label{table:dataReduction}
+	\scriptsize
+	
+\begin{center}
+	
+	\begin{tabular}{lcccc|cccc}
+		\textbf{Data set} & \textbf{Original Dim}& \textbf{Original Voxels} & \textbf{Original Size}& \textbf{Frame rate} & 
+			\textbf{Voxels Removed} & \textbf{Block Dim} & \textbf{\% removal} & \textbf{Frame rate}\\
+		
+		\hline
+		
+		Hop flower        & $512^3$                    &  $134$M       & $536$MB & framerate & vox rem & blockdim & \% rem & framerate \\
+		Graphite foam   & $1\textnormal{K}^3$  & $1,073$M     & $4.3$GB & framerate & vox rem & blockdim & \% rem & framerate \\
+		Bone fragment  & $2\textnormal{K}^3$  & $8,589$M    & $34.4$GB & framerate & vox rem  & blockdim & \% rem & framerate \\
+		4K Hope flower & $4\textnormal{K}^3$  & $68,719$M   & $274.8$GB & framerate & vox rem & blockdim & \% rem & framerate \\
+		Synthetic          & $8\textnormal{K}^3$  & $549,755$M & $2.2$TB & framerate & vox rem & blockdim & \% rem & framerate \\
+	\end{tabular}
+	
+	\end{center}
+	
+\end{table}
+
+
+
+\begin{table}[h]
+	\caption{Cache performance}\label{table:cachePerformance}
+	\scriptsize
+	
+	\begin{center}
+		
+		\begin{tabular}{lcccc|cccc}
+			\textbf{Data set} & \textbf{Original Dim}& \textbf{Original Voxels} & \textbf{Original Size}& \textbf{Cache perf} & 
+				\textbf{Voxels Removed} & \textbf{Block Size} & \textbf{\% removal} & \textbf{Cache perf}\\
+			
+			\hline
+			
+			Hop flower        & $512^3$                    &  $134$M       & $536$MB & cacheperf & vox rem & blockdim & \% rem & cacheperf \\
+			Graphite foam   & $1\textnormal{K}^3$  & $1,073$M     & $4.3$GB & cacheperf & vox rem & blockdim & \% rem & cacheperf \\
+			Bone fragment  & $2\textnormal{K}^3$  & $8,589$M    & $34.4$GB & cacheperf & vox rem  & blockdim & \% rem & cacheperf \\
+			4K Hope flower & $4\textnormal{K}^3$  & $68,719$M   & $274.8$GB & cacheperf & vox rem & blockdim & \% rem & cacheperf \\
+			Synthetic          & $8\textnormal{K}^3$  & $549,755$M & $2.2$TB & cacheperf & vox rem & blockdim & \% rem & cacheperf \\
+		\end{tabular}
+		
+	\end{center}
+	
+\end{table}
+
 
 \section{Conclusion}
 
 %% if specified like this the section will be committed in review mode
-\acknowledgments{
-The authors wish to thank A, B, C. This work was supported in part by
-a grant from XYZ.}
+\acknowledgments{}
 
 \bibliographystyle{abbrv}
 %%use following if all content of bibtex file should be shown

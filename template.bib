@@ -1,66 +1,87 @@
-@manual{kitware2003,
-  title = {The Visualization Toolkit User's Guide},
-  organization = {Kitware, Inc.},
-  year = {2003},
-  month = {January}
+@article{Beyer2014,
+abstract = {This survey gives an overview of the current state of the art in GPU techniques for interactive large-scale volume visualization. Modern techniques in this field have brought about a sea change in how interactive visualization and analysis of giga-, tera-, and petabytes of volume data can be enabled on GPUs. In addition to combining the parallel processing power of GPUs with out-of-core methods and data streaming, a major enabler for interactivity is making both the computational and the visualization effort proportional to the amount and resolution of data that is actually visible on screen, i.e., output-sensitive algorithms and system designs. This leads to recent output-sensitive approaches that are ray-guided, visualization-driven, or display-aware. In this survey, we focus on these characteristics and propose a new categorization of GPU-based large-scale volume visualization techniques based on the notions of actual output-resolution visibility and the current working set of volume bricks - the current subset of data that is minimally required to produce an output image of the desired display resolution. For our purposes here, we view parallel (distributed) visualization using clusters as an orthogonal set of techniques that we do not discuss in detail but that can be used in conjunction with what we discuss in this survey.},
+author = {Beyer, Johanna and Hadwiger, Markus and Pfister, Hanspeter},
+doi = {10.1111/cgf.12605},
+file = {:home/jim/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Beyer, Hadwiger, Pfister - 2014 - A Survey of GPU-Based Large-Scale Volume Visualization.pdf:pdf},
+issn = {01677055},
+journal = {Eurographics Conference on Visualization (EuroVis)},
+pages = {to appear},
+title = {{A Survey of GPU-Based Large-Scale Volume Visualization}},
+url = {http://vcg.seas.harvard.edu/publications/survey-gpu-based-large-scale-volume-visualization},
+volume = {Vi},
+year = {2014}
+}
+@book{Engel2004,
+abstract = {The tremendous evolution of programmable graphics hardware has made high-quality real-time volume graphics a reality. In addition to the traditional application of rendering volume data in scientific visualization, the interest in applying these techniques for real-time rendering of atmospheric phenomena and participating media such as fire, smoke, and clouds is growing rapidly. This course covers both applications in scientific visualization, e.g., medical volume data, and real-time rendering, such as advanced effects and illumination in computer games, in detail. Course participants will learn techniques for harnessing the power of consumer graphics hardware and high-level shading languages for real-time rendering of volumetric data and effects. Beginning with basic texture-based approaches including hardware ray casting, the algorithms are improved and expanded incrementally, covering local and global illumination, scattering, pre-integration, implicit surfaces and non-polygonal isosurfaces, transfer function design, volume animation and deformation, dealing with large volumes, high-quality volume clipping, rendering segmented volumes, higher-order filtering, and non-photorealistic volume rendering. Course participants are provided with documented source code covering details usually omitted in publications.},
+author = {Engel, Klaus and Hadwiger, Markus and Kniss, Joe M and Lefohn, Aaron E and Salama, Christof Rezk and Weiskopf, Daniel},
+booktitle = {Proceedings of the conference on SIGGRAPH 2004 course notes - GRAPH '04},
+doi = {10.1145/1103900.1103929},
+file = {:home/jim/Downloads/cs28.pdf:pdf},
+isbn = {0111456789},
+pages = {29--es},
+title = {{Real-time volume graphics}},
+url = {http://portal.acm.org/citation.cfm?doid=1103900.1103929},
+year = {2004}
+}
+@article{Lee2004,
+abstract = {In this paper, we propose a bandwidth-effective volume ren- dering scheme which subdivides the volume into the sub-volumes and transmits them to the texture units in visibility order. Each sub-volume is rendered in the same manner as the original volume on the graph- ics hardware and the corresponding sub-image is blended in the alpha blending unit. The sub-volume oriented processing improves the cache efficiency and allows empty space skipping. Moreover, it is capable of rendering volume datasets that do not fit into the texture memory. Sim- ulations show that the proposed scheme is effective for 3D texture-based volume rendering on commodity graphics hardware by reducing memory bandwidth up to 30 times when compared with the traditional method.},
+annote = {Slides:
+http://web.yonsei.ac.kr/wjlee/document/wjLee{\_}ICCSA{\_}slide.pdf},
+author = {Lee, Won-jong and Park, Woo-chan and Kim, Jung-woo and Han, Tack-don and Yang, Sung-Bong and Neelamkavil, Francis},
+file = {:home/jim/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Lee et al. - 2004 - A Bandwidth Reduction Scheme for 3D Texture-Based Volume Rendering on Commodity Graphics Hardware.pdf:pdf},
+journal = {ICCSA 2004: International Conference on Computational Science and Its Applications (LNCS)},
+pages = {741--750},
+title = {{A Bandwidth Reduction Scheme for 3D Texture-Based Volume Rendering on Commodity Graphics Hardware}},
+url = {http://web.yonsei.ac.kr/wjlee/document/wjLee{\_}ICCSA.pdf},
+volume = {3044},
+year = {2004}
+}
+@article{Li2003,
+abstract = {We propose methods to accelerate texture-based volume rendering by skipping invisible voxels. We partition the volume into sub-volumes, each containing voxels with similar properties. Sub-volumes composed of only voxels mapped to empty by the transfer function are skipped. To render the adaptively partitioned sub-volumes in visibility order, we reorganize them into an orthogonal BSP tree. We also present an algorithm that computes incrementally the intersection of the volume with the slicing planes, which avoids the overhead of the intersection and texture coordinates computation introduced by the partitioning. Rendering with empty space skipping is 2 to 5 times faster than without it. To skip occluded voxels, we introduce the concept of orthogonal opacity map, that simplifies the transformation between the volume coordinates and the opacity map coordinates, which is intensively used for occlusion detection. The map is updated efficiently by the GPU. The sub-volumes are then culled and clipped against the opacity map. We also present a method that adaptively adjusts the optimal number of the opacity map updates. With occlusion clipping, about 60{\%} of non-empty voxels can be skipped and an additional 80{\%} speedup on average is gained for iso-surface-like rendering.},
+author = {Li, Wei Li Wei and Mueller, K. and Kaufman, A.},
+doi = {10.1109/VISUAL.2003.1250388},
+file = {:home/jim/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Li, Mueller, Kaufman - 2003 - Empty space skipping and occlusion clipping for texture-based volume rendering.pdf:pdf},
+isbn = {0-7803-8120-3},
+journal = {IEEE Visualization, 2003. VIS 2003.},
+title = {{Empty space skipping and occlusion clipping for texture-based volume rendering}},
+year = {2003}
+}
+@article{Vidal2008,
+abstract = {Abstract. Interactive volume rendering methods such as texture-based slicing techniques and ray-casting have been well developed in recent years. The rendering performance is generally restricted by the volume size, the fill-rate and the tex- ture fetch speed of the graphics hardware. For most 3D data sets, a fraction of the volume is empty, which will reduce the rendering performance without specific optimization. In this paper, we present a simple kd-tree based space partitioning scheme to efficiently remove the empty spaces from the volume data sets at the pre- processing stage. The splitting rule of the scheme is based on a simple yet effective cost function evaluated through a fast approximation of the bounding volume of the non-empty regions. The scheme culls a large number of empty voxels and encloses the remaining data with a small number of axis-aligned bounding boxes, which are then used for interactive rendering. The number of the boxes is controlled by halting criteria. In addition to its simplicity, our scheme requires little preprocessing time and improves the rendering performance significantl},
+author = {Vidal, Vincent and Mei, Xing and Decaudin, Philippe},
+doi = {10.1080/2151237X.2008.10129258},
+file = {:home/jim/.local/share/data/Mendeley Ltd./Mendeley Desktop/Downloaded/Vidal, Mei, Decaudin - 2008 - Simple Empty-Space Removal for Interactive Volume Rendering.pdf:pdf},
+issn = {2151-237X},
+journal = {Journal of Graphics, GPU, and Game Tools},
+number = {2},
+pages = {21--36},
+title = {{Simple Empty-Space Removal for Interactive Volume Rendering}},
+volume = {13},
+year = {2008}
 }
 
-@misc{notes2002,
-  author = {Georges Grinstein and Daniel Keim and Matthew Ward},
-  title = {Information Visualization, Visual Data Mining, and Its Application to Drug Design},
-  howpublished = {IEEE Visualization 2002 Course \#1 Notes},
-  month = {October},
-  year = {2002}
+@article{Muraki1993,
+	abstract = {The application of 3D orthogonal wavelet transforms to real volume data is discussed. Examples of the wavelet transform and the reconstruction of 1D functions are presented. The application of the 3D wavelet transform to real volume data generated from a series of 115 slices of magnetic resonance (MR) images is described},
+	author = {Muraki, Shigeru},
+	doi = {10.1109/38.219451},
+	issn = {02721716},
+	journal = {IEEE Computer Graphics and Applications},
+	number = {4},
+	pages = {50--56},
+	title = {{Volume Data and Wavelet Transforms}},
+	volume = {13},
+	year = {1993}
+}
+@article{Ihm1999,
+	abstract = {Interactive visualization of very large volume data has been recognized as a task requiring great effort in a variety of science and engineering fields. In particular, such data usually places considerable demands on run-time memory space. In this paper, we present an effective 3D compression scheme for interactive visualization of very large volume data, that exploits the power of wavelet theory. In designing our method, we have compromised between two important factors: high compression ratio and fast run-time random access ability. Our experimental results on the Visual Human data sets show that our method achieves fairly good compression ratios. In addition, it minimizes the overhead caused during run-time reconstruction of voxel values. This 3D compression scheme will be useful in developing many interactive visualization systems for huge volume data, especially when they are based on personal computers or workstations with limited memory.},
+	author = {Ihm, Insung and Park, Sanghun},
+	doi = {10.1111/1467-8659.00298},
+	issn = {01677055},
+	journal = {Computer Graphics Forum},
+	number = {1},
+	pages = {3--15},
+	title = {{Wavelet-based 3D compression scheme for interactive visualization of very large volume data}},
+	volume = {18},
+	year = {1999}
 }
 
-@article{Max:1995:OMF,
-  author = "Nelson Max",
-  title = "Optical models for direct volume rendering",
-  year = "1995",
-  month = jun,
-  journal = "IEEE Transactions on Visualization and Computer
-    Graphics",
-  volume = "1",
-  number = "2",
-  pages = "99--108",
-}
-
-@book{ware:2004:IVP,
-  author = "Colin Ware",
-  title = "Information Visualization: Perception for Design",
-  edition = "second",
-  year = 2004,
-  publisher = "Morgan Kaufmann Publishers",
-}
-
-@mastersthesis{kindlmann:1999:SAG,
-  author = "Gordon Kindlmann",
-  title = "Semi-Automatic Generation of Transfer Functions for Direct Volume Rendering",
-  school = "Cornell University",
-  year = 1999,
-}
-
-@phdthesis{levoy:1989:DSV,
-  author = "Marc Levoy",
-  title = "Display of Surfaces from Volume Data",
-  school = "University of North Carolina at Chapel Hill",
-  year = 1989,
-}
-
-@inproceedings{Lorensen:1987:MCA,
-  author = "William E. Lorensen and Harvey E. Cline",
-  title = "Marching Cubes: A High Resolution 3D Surface Construction Algorithm",
-  year = "1987",
-  month = jul,
-  booktitle = "Computer Graphics (Proceedings of SIGGRAPH 87)",
-  volume = 21,
-  pages = "163--169",
-}
-
-@inproceedings{Nielson:1991:TAD,
-  author = "Gregory M. Nielson and Bernd Hamann",
-  title = "The Asymptotic Decider: Removing the Ambiguity in Marching Cubes",
-  year = "1991",
-  booktitle = "Visualization '91",
-  pages = "83--91",
-}
