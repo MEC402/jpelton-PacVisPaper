@@ -164,9 +164,8 @@ information.\footnote{Assuming the data set is represented using 32-bit
 	floating point representation 
 	($8192^3 = 512\textnormal{G}$, 
 	and $4\textnormal{bytes/float} \times 8192^3 \approx 2.2\textnormal{TB}$).} 
-The Idaho National Lab is also producing
-high resolution scans of $2048^3$ voxels,
-with each scan producing approximately 34.4GB of data.
+The Idaho National Lab is also producing high resolution scans of $2048^3$
+voxels, with each scan producing approximately 34.4GB of data.
 Table~\ref{table:targetedDataSets} lists test data sets and sizes used for this
 report.
 
@@ -199,8 +198,8 @@ decompressed on the fly on the gpu \cite{Muraki1993}, \cite{Ihm1999}, and
 simple removal of unneeded data that would otherwise be rendered completely transparent, 
 or occluded from view by data rendered completely opaque.
 
-\cite{Li2003} adapt empty space skipping and early ray termination used in ray-casting volume renderers
-to work in slice-based rendering. Their methods employ
+\cite{Li2003} adapt empty space skipping and early ray termination used in
+ray-casting volume renderers to work in slice-based rendering. 
 
 \cite{Engel2004} discuss subdivision of volumetric data sets into bricks that
 fit entirely in the local memory on the graphics board.  A cache of these
@@ -257,21 +256,22 @@ This project uses a classification scheme to identify the empty data. A user
 defined classifier function that maps voxel values to voxel relevance is
 employed to identify which space should be removed. 
 
-\paragraph{Implementation}
+\section{Implementation}
 Two artifacts have been developed: a preprocessing program and a simple direct
-volume renderer.  Both have been developed in modern C++, and the volume
-renderer uses OpenGL 4 to display visualizations. The volume renderer is
-a slice-based multi-volume renderer that we use to 
-render the many subvolumes defined by the preprocessor program.
+volume renderer capable of rendering many small volumes at once.  
+Both are written in modern C++, and the volume
+renderer uses OpenGL 4 to display visualizations. The preprocessor scans the volume
+data in parallel. Parallel programing was aided with Intel Threaded Building Blocks
+framework. The preprocessor runs entirely on the CPU.
 
-\paragraph{Processing Pipeline} 
+\section{Processing Pipeline} 
 The preprocessor streams the original, large volume data set from storage and
 collects statistics about the data. In a second pass, the volume is streamed
 again one block at a time and block-local analysis is done. Each subvolume is
 classified as relevant or irrelevant and the binary index file containing
 classification information of each subvolume is generated.  The index file is
-used by the simple direct volume renderer to render the subvolumes. is
-a slicing 3D texture-based multi-volume renderer. 
+used by the simple direct volume renderer to render the subvolumes. 
+% is a slicing 3D texture-based multi-volume renderer. 
 
 The preprocessor program uses a 2-pass streaming approach when reading the
 large volume data. The streaming approach is necessary to enable processing on
@@ -429,11 +429,11 @@ and the relevant voxel threshold ($s_{min}$).
 		
 		\hline
 		
-		Hop flower        & $512^3$                    &  $134$M       & $536$MB & framerate & vox rem & blockdim & \% rem & framerate \\
-		Graphite foam   & $1\textnormal{K}^3$  & $1,073$M     & $4.3$GB & framerate & vox rem & blockdim & \% rem & framerate \\
-		Bone fragment  & $2\textnormal{K}^3$  & $8,589$M    & $34.4$GB & framerate & vox rem  & blockdim & \% rem & framerate \\
-		4K Hope flower & $4\textnormal{K}^3$  & $68,719$M   & $274.8$GB & framerate & vox rem & blockdim & \% rem & framerate \\
-		Synthetic          & $8\textnormal{K}^3$  & $549,755$M & $2.2$TB & framerate & vox rem & blockdim & \% rem & framerate \\
+		Hop flower      & $512^3$              &  $134$M     & $536$MB   & framerate & vox rem & blockdim & \% rem & framerate \\
+		Graphite foam   & $1\textnormal{K}^3$  & $1,073$M    & $4.3$GB   & framerate & vox rem & blockdim & \% rem & framerate \\
+		Bone fragment   & $2\textnormal{K}^3$  & $8,589$M    & $34.4$GB  & framerate & vox rem & blockdim & \% rem & framerate \\
+		4K Hope flower  & $4\textnormal{K}^3$  & $68,719$M   & $274.8$GB & framerate & vox rem & blockdim & \% rem & framerate \\
+		Synthetic       & $8\textnormal{K}^3$  & $549,755$M  & $2.2$TB   & framerate & vox rem & blockdim & \% rem & framerate \\
 	\end{tabular}
 	
 	\end{center}
