@@ -174,25 +174,9 @@ too large to fit in the largest GPU memory capacities available today
 (12--16GB).  Rendering these volumes requires complicated out-of-core methods that can
 negatively impact visual quality and interactivity.  
 
-\begin{table}[h]
- 	 \caption{Selected data sets and dimensions ($1\textnormal{K}=\nobreak1024$) 
-	 	 	with corresponding sizes in bytes.}\label{table:targetedDataSets}
-	 \scriptsize
-	\begin{center}
-		\begin{tabular}{lccc}
-			\textbf{Data set} & \textbf{Dimensions} & \textbf{Voxels} & \textbf{Size} (bytes)\\
-			\hline
-			Hop flower & $512^3$ & 134M & $536$MB \\
-			Graphite foam & $1\textnormal{K}^3$ & $1,073$M & $4.3$GB  \\
-			Bone fragment & $2\textnormal{K}^3$ & $8,589$M & $34.4$GB  \\
-			4K Hop flower & $4\textnormal{K}^3$ & $68,719$M & $274.8$GB \\
-			Synthetic volume & $8\textnormal{K}^3$ & $549,755$M & $2.2$TB  \\
-		\end{tabular}
-	\end{center}
-\end{table}
 
 \section{Related Work}
-The problem of large volume data exhayusting available gpu memory has been studied
+The problem of large volume data exhausting available gpu memory has been studied
 for ever. Several approaches are possible such as compression methods that are easily
 decompressed on the fly on the gpu \cite{Muraki1993}, \cite{Ihm1999}, and 
 simple removal of unneeded data that would otherwise be rendered completely transparent, 
@@ -232,29 +216,53 @@ methods are not novel or sophisticated, but maintain that they work well
 across a wide range of volume types with large homogenous regions of neighboring
 voxels.
 
-\section{Methods}
+\section{Methods}\label{sec:methods}
 
 %\subsection{Identifying empty data}
 Volume data usually contains large, coherent regions where neighboring voxels
-share similar properties. These regions will likely be assigned similar color
-and opacity values. If the homogeneous regions are of no interest to the user
-we can try to remove as many of these neighboring voxels as possible.
-One way to do this is to split the volume data set into small 
-subvolumes which can be classified as relevant or irrelevant. Classification
-is done by visiting each voxel in a subvolume and using a user defined 
-classifier to decide if the voxel is relevant or irrelevant. Subvolumes with a
-user defined percentage of irrelevant voxels can be removed.
+share similar properties. In the visualization these homogenous regions will
+likely be assigned similar color and opacity values. If the homogeneous regions
+are of no interest to the user we can try to remove as many of these
+neighboring voxels as possible.  To remove the irrelevant voxels we split the 
+volume data into small subvolumes which can be classified as relevant or
+irrelevant.  Classification is done by visiting each voxel in a subvolume and
+using a user defined classifier to decide if the voxel is relevant or
+irrelevant. Subvolumes with a user defined percentage of irrelevant voxels can
+be removed.
 
-We attempt to use a very simple approach to tackle both space skipping and 
+We use a very simple approach to address both space skipping and 
 data removal. Our preprocessor program subdivides volume data into uniformly
-sized subvolumes and scans the subvolumes to determine if the subvolume
+sized subvolumes and scans the subvolumes to determine if each individual subvolume
 would be relevant to the final visualization. Only subvolumes that contain
 data that provides a relevant contribution to the desired visualization are
-sent to the GPU.
+sent to the GPU. For example, a relevant subvolume would not be rendered the
+same color as the background, and thus would provide some visual content for the
+rendered visualization image.
 
-This project uses a classification scheme to identify the empty data. A user
+A user
 defined classifier function that maps voxel values to voxel relevance is
-employed to identify which space should be removed. 
+employed to identify which space should be removed. A relevant voxel is one that
+will provide some visual content to the rendered image.
+
+\subsection{Selected test volumes}\label{ssec:selectedTestVolumes}
+\begin{table}[h]
+	\caption{Selected data sets and dimensions ($1\textnormal{K}=\nobreak1024$) 
+		with corresponding sizes in bytes.}\label{table:selectedTestVolumes}
+	\scriptsize
+	\begin{center}
+		\begin{tabular}{lccc}
+			\textbf{Data set} & \textbf{Dimensions} & \textbf{Voxels} & \textbf{Size} (bytes)\\
+			\hline
+			Hop flower & $512^3$ & 134M & $536$MB \\
+			Graphite foam & $1\textnormal{K}^3$ & $1,073$M & $4.3$GB  \\
+     		Bone fragment & $2\textnormal{K}^3$ & $8,589$M & $34.4$GB  \\
+     		Terrashake & $2\textnormal{K}^3$ & $8,589$M & $34.4$GB  \\
+			4K Hop flower & $4\textnormal{K}^3$ & $68,719$M & $274.8$GB \\
+			Synthetic volume & $8\textnormal{K}^3$ & $549,755$M & $2.2$TB  \\
+		\end{tabular}
+	\end{center}
+\end{table}
+
 
 \section{Implementation}
 Two artifacts have been developed: a preprocessing program and a simple direct
@@ -264,28 +272,24 @@ renderer uses OpenGL 4 to display visualizations. The preprocessor scans the vol
 data in parallel. Parallel programing was aided with Intel Threaded Building Blocks
 framework. The preprocessor runs entirely on the CPU.
 
-\section{Processing Pipeline} 
-The preprocessor streams the original, large volume data set from storage and
-collects statistics about the data. In a second pass, the volume is streamed
-again one block at a time and block-local analysis is done. Each subvolume is
-classified as relevant or irrelevant and the binary index file containing
-classification information of each subvolume is generated.  The index file is
-used by the simple direct volume renderer to render the subvolumes. 
-% is a slicing 3D texture-based multi-volume renderer. 
 
-The preprocessor program uses a 2-pass streaming approach when reading the
-large volume data. The streaming approach is necessary to enable processing on
+\paragraph{Preprocessing Pipeline} 
+The preprocessor streams the original, large volume data set from storage and
+collects statistics about the data. Both global volume analysis and block-local analysis
+is done in a single streaming pass. The statistics are saved to an index file that associates
+the block information with the associated block index. At runtime a renderer can 
+classify each subvolume as relevant or irrelevant and the binary index file containing
+classification information of each subvolume is generated.  The renderer can link to our C++
+library containing the file IO code so any renderer can easily implement our index-file technique. 
+The index file is used by the simple direct volume renderer to render the subvolumes.
+
+The one-pass streaming approach is necessary to enable processing on
 reasonably powerful desktop systems which cannot hold the entire data set in
 memory. The first pass streams rows of data into memory and collects global
 statistics about the volume. The second pass streams each block of data into
 memory for block local analysis and generates the index file.
 
-\begin{figure}[htb]\label{fig:initToViewFlowWithPartition}
-	\begin{centering}
-		\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{init-to-view-with-index-file}
-		\caption{Volume visualization pipeline using the index file produced during preprocessing.}
-	\end{centering}
-\end{figure}
+
 
 
 
@@ -307,14 +311,23 @@ Algorithm~\ref{alg:initGpuTexture}
 shows the method for generating a small 3D texture, $T_{i,j,k}$ for a subvolume
 $S_{i,j,k}$.
 
-\paragraph{Proxy Geometry}
+\begin{figure}[htb]\label{fig:initToViewFlowWithPartition}
+	\begin{centering}
+		\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{init-to-view-with-index-file}
+		\caption{Volume visualization pipeline using the index file produced during preprocessing.}
+	\end{centering}
+\end{figure}
+
+\paragraph{Proxy Geometry Creation for Each Subvolume}
 In a traditional slice-based renderer, a set of 2D slices are used to resample the volume
 texture at regularly space intervals. The number of slices depends on the sampling
-rate used when collecting the volume data \cite{Engel2004}. 
-
-The subvolume blocking approach requires a separate set of slice geometry for each 
-subvolume be used. The number of slices per subvolume depends on the number of 
-data samples within each subvolume and the number of subvolumes generated.
+rate used when collecting the volume data \cite{Engel2004}. The subvolume blocking approach 
+requires a separate set of slice geometry for each 
+subvolume. The number of slices per subvolume depends on the number of 
+data samples within each subvolume and the number of subvolumes generated. In practice,
+we choose to render each subvolume with a number of slices such that the total slices along
+the current major axis is equal to the number of slices that would be used if rendering the 
+dataset as a single large volume.
 
 The basic approach does not reduce the size of the data on the GPU, but does
 improve cache performance if the subvolumes are sized according to texture
@@ -352,8 +365,8 @@ a classification process.
 
 \subsection{Subvolume blocking with classification}\label{sec:subvolumeBlockingWithClassification}
 
-To facilitate easy data removal, the basic subvolume blocking approach can be
-extended to include a classification step that identifies subvolumes relevant
+To facilitate easy data removal we extent the basic subvolume blocking approach
+to include a classification step that identifies subvolumes relevant
 to the desired visualization.  \textit{Relevant} subvolumes are expected to
 contribute in some way to the visualization, otherwise a subvolume is
 \textit{irrelevant}. Algorithm~\ref{alg:partitionAndThreshold} shows how the
@@ -361,8 +374,11 @@ classification step is merged  with the basic subdivision algorithm
 (Algorithm~\ref{alg:initGpuTexture}).
 
 Determining if a subvolume is relevant requires examining each voxel in the
-volume to determine the voxel relevance. The user must supply the classifier
-function, the minimum voxel relevance threshold, and a total relevant voxel
+subvolume to determine the voxel relevance. This per-voxel evaluation is done 
+during a preprocessing step which generates an index file associating subvolumes
+with subvolume statistics. At render time the index file is read and subvolumes are
+classified as relevent or not based on the index file and a user supplied classifier
+function, the minimum relevance threshold, and a total voxel
 threshold. If the number of relevant voxels in the subvolume is above the total
 relevant voxel threshold then the subvolume is relevant to the visualization.
 Algorithm~\ref{alg:threasholdSubVolume} shows one way to determine subvolume
@@ -416,30 +432,41 @@ and the relevant voxel threshold ($s_{min}$).
 
 %\paragraph{Rejected Ejector Seat Reservation}
 \section{Results}
+Using our simple subvolume-based data reduction approach we are able to remove on average 80\% of
+data from our test volumes and still maintain high-quality visualizations that run at interactive framerates. 
+Our selected test volumes show that the usefulness of our technique is not limited to sparse volumes, but
+any volumes with homogeneous regions of neighboring voxels. Because the classifier
+function is user supplied the technique is flexible and can be tailored to the specific data set.
 
 \begin{table}[h]
 	\caption{Data reduction results.}\label{table:dataReduction}
 	\scriptsize
 	
-\begin{center}
-	
-	\begin{tabular}{lcccc|cccc}
-		\textbf{Data set} & \textbf{Original Dim}& \textbf{Original Voxels} & \textbf{Original Size}& \textbf{Frame rate} & 
-			\textbf{Voxels Removed} & \textbf{Block Dim} & \textbf{\% removal} & \textbf{Frame rate}\\
+	\begin{center}
 		
-		\hline
+		\begin{tabular}{lccc|cc}
+			\textbf{Data set} & \textbf{Dimensions} & \textbf{Original Bytes} & \textbf{Block Dim} & \textbf{\% removal} & \textbf{Resulting Bytes} \\
+			
+			\hline
+			
+			Hop flower  (512)  &  $467x504x545$     &  $134$MB       & $16x16x16$    & 67\% &  $41$MB \\
+	        Hop flower  (512)  &  $467x504x545$     &  $134$MB       & $32x32x32$   &  73\% & $34$MB \\
+	        
+	        Bone fragment (2.5K)  &  $2391x3084x2452$  & $18.0$GB    & $16x16x16$GB   & \% rem &  $00$ MB \\
+			Bone fragment (2.5K)  &  $2391x3084x2452$  & $18.0$GB    & $32x32x32$GB    & \% rem &  $00$ MB \\
+
+			Terrashake (2K)&  $XxYxZ$  & $0.0$GB    & $many$GB  & \% rem &  $00$ MB \\
+			Terrashake (2K)&  $XxYxZ$  & $0.0$GB    & $many$GB  & \% rem &  $00$ MB \\
+
+			Hop flower (4K) & $3509x3787x4096$   & $54.4$GB     & $16x16x16$     & 71\%    & $16$GB \\
+			Hop flower (4K) & $3509x3787x4096$   & $54.4$GB      & $32x32x32$   & 75\%    & $13$GB \\
+
+			Synthetic          &  $8\textnormal{K}^3$  & $549,755$M & $2.2$TB        & \% rem &  $00$ MB \\
+		\end{tabular}
 		
-		Hop flower      & $512^3$              &  $134$M     & $536$MB   & framerate & vox rem & blockdim & \% rem & framerate \\
-		Graphite foam   & $1\textnormal{K}^3$  & $1,073$M    & $4.3$GB   & framerate & vox rem & blockdim & \% rem & framerate \\
-		Bone fragment   & $2\textnormal{K}^3$  & $8,589$M    & $34.4$GB  & framerate & vox rem & blockdim & \% rem & framerate \\
-		4K Hope flower  & $4\textnormal{K}^3$  & $68,719$M   & $274.8$GB & framerate & vox rem & blockdim & \% rem & framerate \\
-		Synthetic       & $8\textnormal{K}^3$  & $549,755$M  & $2.2$TB   & framerate & vox rem & blockdim & \% rem & framerate \\
-	\end{tabular}
-	
 	\end{center}
 	
 \end{table}
-
 
 
 \begin{table}[h]
